@@ -1,4 +1,4 @@
-# Báo cáo Day 08 — <<MSHV - Họ và tên>>
+# Báo cáo Day 08 — 2A202603225 - Ngô Xuân Tùng
 
 > Một file duy nhất cho cả bài (đã gộp recipe, QC và ghi chú cá nhân). Mọi con số kèm **mẫu số** và nguồn (file nào). Viết bằng lời của bạn.
 
@@ -6,14 +6,16 @@
 
 | Lớp | Model + cỡ | Ngưỡng | Vì sao (dẫn `run_id` trong `model_log.csv`) |
 |---|---|---|---|
-| person / bicycle / motorbike / car / bus / truck | <<YOLO26m>> | <<theo lớp, từ threshold_sweep>> | <<>> |
-| three_wheeler | <<YOLOE-26s, prompt: ...>> | <<>> | <<>> |
+| person / bicycle / motorbike / car / bus / truck | YOLO26-n | car=0.45; person, motorbike, bicycle, bus, truck=0.30 (mặc định) | YOLO26-n bắt rất nhanh và chuẩn xác các lớp COCO cơ bản (r01_img002, r01_img007, r01_img015). car đạt recall 100% ở ngưỡng 0.45 trên gold; các lớp ít mẫu (<5 vật: bicycle 4, bus 1, truck 0) hoặc không có ngưỡng <=0.5 đạt 90% recall (person tối đa 58%, motorbike tối đa 89%) giữ mặc định 0.30 để tránh bỏ sót. |
+| three_wheeler | YOLOE-26s, prompt: 'tuk-tuk', 'cyclo', 'cargo tricycle' | 0.15 | YOLO26 hoàn toàn không có lớp xe ba bánh nên bỏ sót hoặc gọi nhầm sang truck/motorbike/bicycle (r01_img002, r01_img007, r01_img032). YOLOE giải quyết được điểm mù này (r03_img002, r03_img011, r03_img032); chọn ngưỡng 0.15 để đạt recall 100% trên gold (7/7 vật). |
 
-- Lệnh `merge_prelabels.py` đã dùng (dán nguyên): <<>>
-- **Phiên bản SAM bạn chọn** (SAM 1 / 2.1 / 3) và lý do: <<chất lượng mask, tốc độ, RAM, quyền truy cập>>
-- Lỗi nào **không sửa được bằng đổi ngưỡng** (ví dụ tuk-tuk bị gọi `car`)? Sửa thế nào? <<>>
-- Box **điểm cao mà sai** hoặc **điểm thấp mà đúng** (ảnh nào): <<>>
-- Giới hạn: chọn ngưỡng trên chính gold (4 ảnh) nên số đo máy trên gold là lạc quan: <<>>
+- Lệnh `merge_prelabels.py` đã dùng (dán nguyên): <<dán sau khi chạy ở Part 4>>
+- **Phiên bản SAM bạn chọn** (SAM 1 / 2.1 / 3) và lý do: SAM 2.1 tiny (`sam2.1_t.pt`) vì máy chạy môi trường Windows CPU (không GPU), bản tiny tối ưu tốc độ (~5.12s/ảnh so với hàng chục giây của base), tiết kiệm RAM nhưng vẫn sinh polygon chi tiết (64-96 đỉnh) bám sát viền người và xe (r04_img004, r04_img013).
+- Lỗi nào **không sửa được bằng đổi ngưỡng** (ví dụ tuk-tuk bị gọi `car`)? Sửa thế nào? Lỗi phân loại sai bản chất do danh mục đóng của COCO không có lớp xe ba bánh: ở r01_img002 xe tuk-tuk bị YOLO26 gán thành truck (0.37), ở r01_img032 xích lô bị gán thành bicycle. Nâng ngưỡng lên 0.5 (r02_img002, r02_img032) chỉ làm box biến mất thành lỗi bỏ sót chứ không đổi được tên lớp. Sửa bằng cách kết hợp model open-vocabulary (YOLOE) với text prompt riêng cho three_wheeler, xếp YOLOE lên trước YOLO26 khi merge.
+- Box **điểm cao mà sai** hoặc **điểm thấp mà đúng** (ảnh nào): 
+  - Điểm cao mà sai: Ở `img_002.jpg`, chiếc xe bán tải ở rìa bên phải bị YOLOE gán nhầm thành `three_wheeler` với điểm 0.37 (r03_img002); chiếc tuk-tuk bị YOLO26 tự tin gán thành `truck` với điểm 0.37 (r01_img002).
+  - Điểm thấp mà đúng: Ở `img_011.jpg`, chiếc xe tuk-tuk bị che khuất ở mép trái được YOLOE phát hiện đúng `three_wheeler` dù điểm chỉ đạt 0.28 (r03_img011).
+- Giới hạn: chọn ngưỡng trên chính gold (4 ảnh) nên số đo máy trên gold là lạc quan: Tập gold chỉ có 4 ảnh với tổng số 61 đối tượng (mẫu nhỏ); các lớp như bicycle (4), bus (1), truck (0) quá ít để có ý nghĩa thống kê; chọn và đo trên cùng một tập dữ liệu dẫn đến in-sample bias, do đó độ chính xác thực tế khi áp dụng lên 24 ảnh batch sẽ thấp hơn trên gold.
 
 ## 2. AI error profile (từ `qc/review_stats.md`)
 
