@@ -1,2 +1,4 @@
 step,images,minutes,note
 gold_manual,4,22,Gán tay 4 ảnh gold độc lập không dùng AI
+batch_review,24,75,Duyệt 24 ảnh batch có AI pre-label và 12 bẫy
+
