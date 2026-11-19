@@ -5,7 +5,7 @@
 - Lớp (L2 / L3 / khác): L2
 - Tài khoản GitHub: zzwolfmoi1308
 - Repo bài nộp (URL): https://github.com/zzwolfmoi1308/K5-L23-DAY08-2A202603225-NgoXuanTung-AIPrelabel
-- Commit chốt bài (hash): (sẽ cập nhật khi nộp bài)
+- Commit chốt bài (hash): d9d322e
 - Máy: Windows 11, không GPU (CPU)
 - CVAT (Docker): v2.74.1
 
